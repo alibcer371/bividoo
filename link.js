@@ -504,185 +504,191 @@ typeSel.addEventListener(
    İNDİR
 ========================================= */
 
-linkDownloadBtn.addEventListener(
-  "click",
-  async function () {
+/* =========================================
+   İNDİR
+========================================= */
 
-    if (
-      !linkReady ||
-      currentLinkKind !== "direct" ||
-      !currentURL
-    ) {
-      showStatus(
-        "Bu bağlantı BiVidoo üzerinden doğrudan indirilemiyor."
-      );
+async function downloadDirectFile(url, filename) {
+  const anchor = document.createElement("a");
 
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.rel = "noopener";
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+}
+
+async function downloadProcessedFile() {
+  if (!linkReady || !currentURL) {
+    showStatus("Önce geçerli bir video bağlantısı bul.");
+    return;
+  }
+
+  const type = typeSel.value;
+
+  let quality = qualitySel.value;
+  let audioBitrate = "192";
+
+  if (type === "mp3") {
+    audioBitrate = quality;
+    quality = "original";
+  }
+
+  const originalText = linkDownloadBtn.textContent;
+
+  try {
+    linkDownloadBtn.disabled = true;
+    linkDownloadBtn.textContent = "⏳ Hazırlanıyor...";
+
+    /*
+      MP4 için doğrudan indirme endpoint'i kullanılıyor.
+      Böylece /api/process-url üzerinden FFmpeg işlemine
+      girmeden dosya doğrudan kullanıcıya gönderiliyor.
+    */
+
+    if (type === "video") {
+      showStatus("✓ Video hazırlanıyor...");
+
+      const downloadURL =
+        "/api/download/direct?url=" +
+        encodeURIComponent(currentURL);
+
+      window.location.href = downloadURL;
+
+      showStatus("✓ İndirme başlatıldı.");
       return;
     }
 
+    /*
+      MP3 ve sessiz video için mevcut işlem sistemi kullanılır.
+    */
 
-    const type =
-      typeSel.value;
+    showStatus(
+      "Video sunucuya bağlanıyor ve hazırlanıyor..."
+    );
 
+    const response = await fetch(
+      "/api/process-url",
+      {
+        method: "POST",
 
-    let quality =
-      qualitySel.value;
+        headers: {
+          "Content-Type": "application/json"
+        },
 
+        body: JSON.stringify({
+          url: currentURL,
+          type,
+          quality,
+          audioBitrate
+        })
+      }
+    );
 
-    let audioBitrate =
-      "192";
+    if (!response.ok) {
+      const responseText =
+        await response.text();
 
+      let errorMessage =
+        "Video işlenemedi.";
+
+      try {
+        const data =
+          JSON.parse(responseText);
+
+        errorMessage =
+          data?.error ||
+          data?.message ||
+          responseText ||
+          errorMessage;
+
+      } catch {
+        if (responseText) {
+          errorMessage = responseText;
+        }
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    const blob =
+      await response.blob();
+
+    if (!blob || blob.size === 0) {
+      throw new Error(
+        "Sunucu boş bir dosya döndürdü."
+      );
+    }
+
+    const downloadURL =
+      URL.createObjectURL(blob);
+
+    const anchor =
+      document.createElement("a");
+
+    anchor.href = downloadURL;
 
     if (type === "mp3") {
-      audioBitrate = quality;
-      quality = "original";
+      anchor.download =
+        "bividoo-audio.mp3";
+    } else if (type === "mute") {
+      anchor.download =
+        "bividoo-sessiz.mp4";
+    } else {
+      anchor.download =
+        "bividoo-video.mp4";
     }
 
+    document.body.appendChild(anchor);
 
-    const originalText =
-      linkDownloadBtn.textContent;
+    anchor.click();
 
+    anchor.remove();
 
-    try {
-      linkDownloadBtn.disabled = true;
-
-      linkDownloadBtn.textContent =
-        "⏳ Hazırlanıyor...";
-
-
-      showStatus(
-        "Video sunucuya bağlanıyor ve hazırlanıyor..."
-      );
-
-
-      const response =
-        await fetch(
-"/api/process-url",          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
-
-            body: JSON.stringify({
-              url: currentURL,
-              type,
-              quality,
-              audioBitrate
-            })
-          }
+    setTimeout(
+      () => {
+        URL.revokeObjectURL(
+          downloadURL
         );
+      },
+      5000
+    );
 
+    showStatus(
+      "✓ İşlem tamamlandı. Dosyan indiriliyor."
+    );
 
-      if (!response.ok) {
-        let errorMessage =
-          "Video işlenemedi.";
+  } catch (error) {
 
-        const responseText = await response.text();
+    console.error(error);
 
-try {
-    const data = JSON.parse(responseText);
+    showStatus(
+      "İşlem başarısız: " +
+      (
+        error?.message ||
+        "Sunucuya bağlanılamadı."
+      )
+    );
 
-    if (data?.error) {
-        errorMessage = data.error;
-    } else if (responseText) {
-        errorMessage = responseText;
-    }
-} catch {
-    if (responseText) {
-        errorMessage = responseText;
-    }
+  } finally {
+
+    linkDownloadBtn.disabled =
+      false;
+
+    linkDownloadBtn.textContent =
+      originalText;
+
+    linkDownloadBtn.classList.add(
+      "ready"
+    );
+  }
 }
 
-        throw new Error(
-          errorMessage
-        );
-      }
-
-
-      const blob =
-        await response.blob();
-
-
-      const downloadURL =
-        URL.createObjectURL(blob);
-
-
-      const anchor =
-        document.createElement("a");
-
-
-      anchor.href =
-        downloadURL;
-
-
-      if (type === "mp3") {
-        anchor.download =
-          "bividoo-audio.mp3";
-      }
-
-      else if (type === "mute") {
-        anchor.download =
-          "bividoo-sessiz.mp4";
-      }
-
-      else {
-        anchor.download =
-          "bividoo-video.mp4";
-      }
-
-
-      document.body.appendChild(
-        anchor
-      );
-
-
-      anchor.click();
-
-
-      anchor.remove();
-
-
-      setTimeout(
-        function () {
-          URL.revokeObjectURL(
-            downloadURL
-          );
-        },
-        5000
-      );
-
-
-      showStatus(
-        "✓ İşlem tamamlandı. Dosyan indiriliyor."
-      );
-    }
-
-    catch (error) {
-      console.error(error);
-
-      showStatus(
-        "İşlem başarısız: " +
-        (
-          error?.message ||
-          "Sunucuya bağlanılamadı."
-        )
-      );
-    }
-
-    finally {
-      linkDownloadBtn.disabled =
-        false;
-
-      linkDownloadBtn.textContent =
-        originalText;
-
-      linkDownloadBtn.classList.add(
-        "ready"
-      );
-    }
-  }
+linkDownloadBtn.addEventListener(
+  "click",
+  downloadProcessedFile
 );
 
 
