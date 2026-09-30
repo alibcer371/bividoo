@@ -579,24 +579,21 @@ linkDownloadBtn.addEventListener(
         let errorMessage =
           "Video işlenemedi.";
 
-        try {
-          const data =
-            await response.json();
+        const responseText = await response.text();
 
-          if (data?.error) {
-            errorMessage =
-              data.error;
-          }
-        }
+try {
+    const data = JSON.parse(responseText);
 
-        catch {
-          const text =
-            await response.text();
-
-          if (text) {
-            errorMessage = text;
-          }
-        }
+    if (data?.error) {
+        errorMessage = data.error;
+    } else if (responseText) {
+        errorMessage = responseText;
+    }
+} catch {
+    if (responseText) {
+        errorMessage = responseText;
+    }
+}
 
         throw new Error(
           errorMessage
