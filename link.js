@@ -548,7 +548,7 @@ async function downloadProcessedFile() {
       girmeden dosya doğrudan kullanıcıya gönderiliyor.
     */
 
-    if (type === "video") {
+    if (type === "mp4") {
       showStatus("✓ Video hazırlanıyor...");
 
       const downloadURL =
