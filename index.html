@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="BiVidoo ile video bağlantılarını kontrol et, videolarını dönüştür, MP3'e çevir, sıkıştır, kes ve yeniden boyutlandır."
+  >
+
+  <title>BiVidoo — Ücretsiz Video Araçları</title>
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="nav">
+
+      <a class="brand" href="#">
+        <span class="mark">▶</span>
+
+        <span class="brand-name">
+          <span class="bi">Bi</span><span class="vidoo">Vidoo</span>
+        </span>
+      </a>
+
+      <nav>
+        <a href="#link">Linkten Video</a>
+        <a href="#upload">Video Yükle</a>
+        <a href="#tools">Araçlar</a>
+        <a href="#about">Hakkında</a>
+      </nav>
+
+    </div>
+  </header>
+
+
+  <!-- HERO -->
+  <section class="hero">
+
+    <span class="pill">
+      ⚡ Hızlı • Kolay • Ücretsiz
+    </span>
+
+    <h1>
+      <span class="bi">Bi</span><span class="vidoo">Vidoo</span>
+    </h1>
+
+    <p>
+      Videolarını dönüştür, MP3'e çevir,
+      sıkıştır, kes ve sosyal medya için
+      boyutlandır.
+      <br>
+      İhtiyacın olan video araçları tek yerde.
+    </p>
+
+  </section>
+
+
+  <main>
+
+    <!-- =====================================
+         1. LİNK
+    ====================================== -->
+
+    <section
+      id="link"
+      class="card link-card"
+    >
+
+      <div class="title-row">
+
+        <div class="square-icon">
+          🔗
+        </div>
+
+        <div>
+          <h2>Linkten Video</h2>
+
+          <p>
+            Video bağlantısını yapıştır,
+            formatını ve kalitesini seç.
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="url-row">
+
+        <div class="url-wrap">
+
+          <span class="url-symbol">
+            🔗
+          </span>
+
+          <input
+            id="socialVideoURL"
+            type="url"
+            placeholder="Video bağlantısını buraya yapıştır..."
+            autocomplete="off"
+          >
+
+        </div>
+
+        <button
+          id="findVideoButton"
+          class="find-button"
+          type="button"
+        >
+          🔎 Videoyu Bul
+        </button>
+
+      </div>
+
+
+      <!-- LİNK ÖNİZLEME -->
+
+      <div
+        id="linkPreview"
+        class="link-preview"
+      >
+
+        <iframe
+          id="youtubePreview"
+          class="youtube-preview"
+          title="YouTube video önizleme"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+
+
+        <div
+          id="platformPreview"
+          class="platform-preview"
+        >
+
+          <div
+            id="platformPreviewIcon"
+            class="platform-preview-icon"
+          >
+            🎬
+          </div>
+
+          <strong id="platformPreviewTitle">
+            Video bağlantısı
+          </strong>
+
+          <span id="platformPreviewText">
+            Bağlantı tanındı.
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="link-options">
+
+        <div class="field">
+
+          <label for="linkType">
+            İndirme Türü
+          </label>
+
+          <select id="linkType">
+
+            <option value="mp4">
+              🎬 Video + Ses (MP4)
+            </option>
+
+            <option value="mp3">
+              🎵 Sadece Ses (MP3)
+            </option>
+
+            <option value="mute">
+              🔇 Sessiz Video (MP4)
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label
+            id="qualityLabel"
+            for="linkQuality"
+          >
+            Kalite
+          </label>
+
+          <select id="linkQuality">
+
+            <option value="original">
+              En iyi kalite
+            </option>
+
+            <option value="1080">
+              1080p
+            </option>
+
+            <option value="720">
+              720p
+            </option>
+
+            <option value="480">
+              480p
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <button
+          id="linkDownloadButton"
+          class="link-download"
+          type="button"
+          disabled
+        >
+          ↓ İndir
+        </button>
+
+      </div>
+
+
+      <div
+        id="linkStatus"
+        class="link-status"
+      ></div>
+
+    </section>
+
+
+    <!-- =====================================
+         2. BİLGİSAYARDAN VİDEO
+    ====================================== -->
+
+    <section
+      id="upload"
+      class="card upload-card"
+    >
+
+      <div class="upload-left">
+
+        <div class="upload-heading">
+
+          <div class="square-icon">
+            ↑
+          </div>
+
+          <div>
+
+            <h2>
+              Bilgisayardan Video Yükle
+            </h2>
+
+            <p>
+              Videonu dönüştürmek,
+              sıkıştırmak,
+              kesmek veya yeniden
+              boyutlandırmak için yükle.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <label
+          id="dropZone"
+          class="drop-zone"
+        >
+
+          <div class="upload-icon">
+            ↑
+          </div>
+
+          <strong>
+            Videonu buraya sürükle
+          </strong>
+
+          <small>
+            ya da bilgisayarından seç
+          </small>
+
+          <span class="select-file">
+            📁 Video Seç
+          </span>
+
+          <small>
+            MP4, MOV, AVI,
+            MKV, WEBM
+            ve daha fazlası
+          </small>
+
+          <input
+            id="videoInput"
+            type="file"
+            accept="video/*"
+          >
+
+        </label>
+
+      </div>
+
+
+      <!-- VIDEO ÖNİZLEME -->
+
+      <div id="videoPanel">
+
+        <div class="video-panel-placeholder">
+
+          <div>
+
+            <div class="preview-placeholder-icon">
+              🎬
+            </div>
+
+            <strong>
+              Video Önizleme
+            </strong>
+
+            <div
+              style="
+                margin-top:6px;
+                line-height:1.5;
+              "
+            >
+              Bir video seçtiğinde
+              burada görünecek.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================
+         3. VIDEO ARAÇLARI
+    ====================================== -->
+
+    <section
+      id="tools"
+      class="tools"
+    >
+
+      <div class="tools-heading">
+
+        <h2>
+          Video Araçları
+        </h2>
+
+        <p>
+          Videonu seç ve yapmak istediğin
+          işlemi belirle.
+        </p>
+
+      </div>
+
+
+      <div class="tool-grid">
+
+
+        <!-- DÖNÜŞTÜRÜCÜ -->
+
+        <div
+          class="tool active"
+          data-tool="convert"
+        >
+
+          <div class="tool-icon">
+            ↻
+          </div>
+
+          <h3>
+            Video Dönüştürücü
+          </h3>
+
+          <p>
+            Videonu MP4 formatına dönüştür.
+          </p>
+
+        </div>
+
+
+        <!-- MP3 -->
+
+        <div
+          class="tool"
+          data-tool="mp3"
+        >
+
+          <div class="tool-icon">
+            ♫
+          </div>
+
+          <h3>
+            Video → MP3
+          </h3>
+
+          <p>
+            Videodaki sesi MP3 olarak çıkar.
+          </p>
+
+        </div>
+
+
+        <!-- SIKIŞTIR -->
+
+        <div
+          class="tool"
+          data-tool="compress"
+        >
+
+          <div class="tool-icon">
+            ▤
+          </div>
+
+          <h3>
+            Video Sıkıştır
+          </h3>
+
+          <p>
+            Video dosyasının boyutunu azalt.
+          </p>
+
+        </div>
+
+
+        <!-- KES -->
+
+        <div
+          class="tool"
+          data-tool="trim"
+        >
+
+          <div class="tool-icon">
+            ✂
+          </div>
+
+          <h3>
+            Video Kes
+          </h3>
+
+          <p>
+            Başlangıç ve bitiş bölümünü seç.
+          </p>
+
+        </div>
+
+
+        <!-- BOYUTLANDIR -->
+
+        <div
+          class="tool"
+          data-tool="resize"
+        >
+
+          <div class="tool-icon">
+            ↔
+          </div>
+
+          <h3>
+            Video Boyutlandır
+          </h3>
+
+          <p>
+            9:16, 1:1 veya 16:9 formatına getir.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================
+         4. HAKKINDA
+    ====================================== -->
+
+    <section
+      id="about"
+      class="info-section"
+    >
+
+      <div class="card info-card">
+
+        <h2>
+          BiVidoo Hakkında
+        </h2>
+
+        <p>
+          BiVidoo, videoları kolayca dönüştürmek,
+          MP3'e çevirmek, sıkıştırmak, kesmek ve
+          farklı ekran oranlarına uyarlamak için
+          hazırlanmış basit bir video araçları
+          platformudur.
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER -->
+
+  <footer>
+
+    © 2026 BiVidoo
+
+    <br><br>
+
+    Yalnızca kullanma hakkınız bulunan
+    içerikleri işleyin.
+
+  </footer>
+
+
+  <!-- LİNK SİSTEMİ -->
+
+  <script src="/link.js"></script>
+
+
+  <!-- MEVCUT VIDEO ARAÇLARI -->
+
+  <script
+    type="module"
+    src="/script.js"
+  ></script>
+
+</body>
+
+</html>
