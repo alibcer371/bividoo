@@ -2,11 +2,11 @@
   "name": "bividoo",
   "version": "1.0.0",
   "description": "",
-  "main": "script.js",
+  "main": "server.js",
   "scripts": {
-  "start": "node server.js",
-  "dev": "vite --host"
-},
+    "start": "node server.js",
+    "dev": "vite --host"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -12,12 +12,44 @@ const net = require("net");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const FFMPEG_PATH = require("ffmpeg-static") || "ffmpeg";
+const YTDLP_PATH = path.join(__dirname, "yt-dlp.exe");
 /* =========================================================
    TEMEL AYARLAR
 ========================================================= */
 
 app.use(cors());
 
+/* =========================================================
+   TARAYICI FFMPEG DOSYALARI
+========================================================= */
+
+app.use(
+  "/vendor/ffmpeg",
+  express.static(
+    path.join(
+      __dirname,
+      "node_modules",
+      "@ffmpeg",
+      "ffmpeg",
+      "dist",
+      "esm"
+    )
+  )
+);
+
+app.use(
+  "/vendor/ffmpeg-util",
+  express.static(
+    path.join(
+      __dirname,
+      "node_modules",
+      "@ffmpeg",
+      "util",
+      "dist",
+      "esm"
+    )
+  )
+);
 app.use(
   express.json({
     limit: "2mb",
@@ -567,13 +599,11 @@ async function validateRemoteURL(
     url.hostname.toLowerCase();
 
   const blockedPlatforms = [
-    "youtube.com",
-    "youtu.be",
-    "tiktok.com",
-    "instagram.com",
-    "facebook.com",
-    "fb.watch",
-  ];
+  "tiktok.com",
+  "instagram.com",
+  "facebook.com",
+  "fb.watch",
+];
 
   const blocked =
     blockedPlatforms.some(
@@ -908,7 +938,161 @@ app.get(
 /* =========================================================
    DOĞRUDAN VIDEO İNDİR
 ========================================================= */
+/* =========================================================
+   YOUTUBE VIDEO İNDİR
+========================================================= */
 
+app.get(
+  "/api/download/youtube",
+  async (req, res) => {
+    const url =
+      String(
+        req.query.url || ""
+      ).trim();
+
+    if (!url) {
+      res.status(400).json({
+        success: false,
+        message:
+          "YouTube bağlantısı gerekli.",
+      });
+
+      return;
+    }
+
+    let outputPath = null;
+
+    try {
+      const parsedURL =
+        new URL(url);
+
+      const hostname =
+        parsedURL.hostname
+          .toLowerCase()
+          .replace(/^www\./, "");
+
+      if (
+        hostname !== "youtube.com" &&
+        hostname !== "m.youtube.com" &&
+        hostname !== "youtu.be"
+      ) {
+        throw new Error(
+          "Sadece YouTube bağlantıları destekleniyor."
+        );
+      }
+
+      outputPath =
+        path.join(
+          TEMP_DIR,
+          crypto.randomUUID() +
+            ".mp4"
+        );
+
+      const args = [
+  "--js-runtimes",
+  "deno",
+  "--ffmpeg-location",
+  path.dirname(FFMPEG_PATH),
+  "-f",
+  "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+  "--merge-output-format",
+  "mp4",
+  "--no-playlist",
+  "-o",
+  outputPath,
+  url,
+];
+
+      await new Promise(
+        (resolve, reject) => {
+          const process =
+            spawn(
+              YTDLP_PATH,
+              args,
+              {
+                windowsHide: true,
+              }
+            );
+
+          let errorOutput = "";
+
+          process.stderr.on(
+            "data",
+            (data) => {
+              errorOutput +=
+                data.toString();
+            }
+          );
+
+          process.on(
+            "error",
+            (error) => {
+              reject(error);
+            }
+          );
+
+          process.on(
+            "close",
+            (code) => {
+              if (code === 0) {
+                resolve();
+              } else {
+                reject(
+                  new Error(
+                    errorOutput ||
+                      "YouTube videosu indirilemedi."
+                  )
+                );
+              }
+            }
+          );
+        }
+      );
+
+      if (
+        !fs.existsSync(
+          outputPath
+        )
+      ) {
+        throw new Error(
+          "İndirilen video dosyası bulunamadı."
+        );
+      }
+
+      res.download(
+        outputPath,
+        "bividoo-youtube.mp4",
+        () => {
+          safeDelete(
+            outputPath
+          );
+        }
+      );
+
+    } catch (error) {
+
+      safeDelete(
+        outputPath
+      );
+
+      console.error(
+        "YouTube download:",
+        error.message
+      );
+
+      if (
+        !res.headersSent
+      ) {
+        res.status(400).json({
+          success: false,
+          message:
+            error.message ||
+            "YouTube videosu indirilemedi.",
+        });
+      }
+    }
+  }
+);
 app.get(
   "/api/download/direct",
   async (req, res) => {
@@ -1059,6 +1243,159 @@ app.post(
 
       console.error(
         "Process:",
+        error.message
+      );
+
+      if (
+        !res.headersSent
+      ) {
+        res.status(500).json({
+          success: false,
+          message:
+            error.message,
+        });
+      }
+    }
+  }
+);
+/* =========================================================
+   YOUTUBE MP3 İNDİR
+========================================================= */
+
+app.get(
+  "/api/download/youtube-mp3",
+  async (req, res) => {
+    const url =
+      String(
+        req.query.url || ""
+      ).trim();
+
+    if (!url) {
+      res.status(400).json({
+        success: false,
+        message: "YouTube bağlantısı gerekli.",
+      });
+
+      return;
+    }
+
+    let outputPath = null;
+
+    try {
+      const parsedURL = new URL(url);
+
+      const hostname =
+        parsedURL.hostname
+          .toLowerCase()
+          .replace(/^www\./, "");
+
+      if (
+        hostname !== "youtube.com" &&
+        hostname !== "m.youtube.com" &&
+        hostname !== "youtu.be"
+      ) {
+        throw new Error(
+          "Sadece YouTube bağlantıları destekleniyor."
+        );
+      }
+
+      outputPath =
+        path.join(
+          TEMP_DIR,
+          crypto.randomUUID() + ".mp3"
+        );
+
+      const args = [
+        "--js-runtimes",
+        "deno",
+
+        "--ffmpeg-location",
+        path.dirname(FFMPEG_PATH),
+
+        "-x",
+
+        "--audio-format",
+        "mp3",
+
+        "--audio-quality",
+        "192K",
+
+        "--no-playlist",
+
+        "-o",
+        outputPath,
+
+        url,
+      ];
+
+      await new Promise(
+        (resolve, reject) => {
+          const process =
+            spawn(
+              YTDLP_PATH,
+              args,
+              {
+                windowsHide: true,
+              }
+            );
+
+          let errorOutput = "";
+
+          process.stderr.on(
+            "data",
+            (data) => {
+              errorOutput +=
+                data.toString();
+            }
+          );
+
+          process.on(
+            "error",
+            reject
+          );
+
+          process.on(
+            "close",
+            (code) => {
+              if (code === 0) {
+                resolve();
+              } else {
+                reject(
+                  new Error(
+                    errorOutput ||
+                      "YouTube MP3 dönüştürme başarısız."
+                  )
+                );
+              }
+            }
+          );
+        }
+      );
+
+      if (!fs.existsSync(outputPath)) {
+        throw new Error(
+          "MP3 dosyası oluşturulamadı."
+        );
+      }
+
+      res.download(
+        outputPath,
+        "bividoo-audio.mp3",
+        () => {
+          safeDelete(
+            outputPath
+          );
+        }
+      );
+
+    } catch (error) {
+
+      safeDelete(
+        outputPath
+      );
+
+      console.error(
+        "YouTube MP3:",
         error.message
       );
 

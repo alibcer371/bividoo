@@ -68,10 +68,9 @@ function disableDownload() {
 
 
 function enableDownload() {
-  linkReady = true;
-
-  linkDownloadBtn.disabled = false;
-  linkDownloadBtn.classList.add("ready");
+    linkReady = true;
+    linkDownloadBtn.disabled = false;
+    linkDownloadBtn.classList.add("ready");
 }
 
 
@@ -297,8 +296,10 @@ function checkVideoLink() {
       showStatus(
         "YouTube videosu bulundu. Önizleme hazır. Bu bağlantı doğrudan video dosyası olmadığı için BiVidoo üzerinden MP4/MP3 indirme kullanılamaz."
       );
+      linkReady = true;
+linkDownloadBtn.disabled = false;
+linkDownloadBtn.classList.add("ready");
     }
-
     else {
       showPlatformPreview(
         "▶",
@@ -521,10 +522,15 @@ async function downloadDirectFile(url, filename) {
 }
 
 async function downloadProcessedFile() {
-  if (!linkReady || !currentURL) {
-    showStatus("Önce geçerli bir video bağlantısı bul.");
+  const inputURL = String(urlInput.value || "").trim();
+
+  if (!inputURL) {
+    showStatus("✕ Lütfen bir video bağlantısı gir.");
     return;
   }
+
+  currentURL = inputURL;
+  linkReady = true;
 
   const type = typeSel.value;
 
@@ -549,17 +555,40 @@ async function downloadProcessedFile() {
     */
 
     if (type === "mp4") {
-      showStatus("✓ Video hazırlanıyor...");
+  showStatus("✓ Video hazırlanıyor...");
 
-      const downloadURL =
+  let downloadURL;
+
+  try {
+    const parsedURL = new URL(currentURL);
+    const hostname = parsedURL.hostname
+      .toLowerCase()
+      .replace(/^www\./, "");
+
+    const isYouTube =
+      hostname === "youtube.com" ||
+      hostname === "m.youtube.com" ||
+      hostname === "youtu.be";
+
+    if (isYouTube) {
+      downloadURL =
+        "/api/download/youtube?url=" +
+        encodeURIComponent(currentURL);
+    } else {
+      downloadURL =
         "/api/download/direct?url=" +
         encodeURIComponent(currentURL);
-
-      window.location.href = downloadURL;
-
-      showStatus("✓ İndirme başlatıldı.");
-      return;
     }
+  } catch (error) {
+    showStatus("✕ Geçersiz video bağlantısı.");
+    return;
+  }
+
+  window.location.href = downloadURL;
+
+  showStatus("✓ İndirme başlatıldı.");
+  return;
+}
 
     /*
       MP3 ve sessiz video için mevcut işlem sistemi kullanılır.
@@ -569,25 +598,29 @@ async function downloadProcessedFile() {
       "Video sunucuya bağlanıyor ve hazırlanıyor..."
     );
 
-    const response = await fetch(
-      "/api/process-url",
-      {
-        method: "POST",
+    let response;
 
-        headers: {
-          "Content-Type": "application/json"
-        },
+if (currentLinkKind === "youtube" && type === "mp4") {
+  const youtubeURL =
+    "/api/download/youtube?url=" +
+    encodeURIComponent(currentURL);
 
-        body: JSON.stringify({
-          url: currentURL,
-          type,
-          quality,
-          audioBitrate
-        })
-      }
-    );
-
-    if (!response.ok) {
+  response = await fetch(youtubeURL);
+} else {
+  response = await fetch("/api/process-url", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      url: currentURL,
+      type,
+      quality,
+      audioBitrate
+    })
+  });
+}
+ if (!response.ok) {
       const responseText =
         await response.text();
 

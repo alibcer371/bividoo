@@ -1,6 +1,6 @@
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile, toBlobURL } from "@ffmpeg/util";
+import { FFmpeg } from "/vendor/ffmpeg/index.js";
 
+import { fetchFile, toBlobURL } from "/vendor/ffmpeg-util/index.js";
 /* =========================================
    BIVIDOO
 ========================================= */
@@ -869,19 +869,30 @@ async function convertToMP3() {
     );
 
     await ffmpeg.exec([
-      "-i",
-      input,
+  "-i",
+  input,
 
-      "-vn",
+  "-map",
+  "0:a:0?",
 
-      "-codec:a",
-      "libmp3lame",
+  "-vn",
 
-      "-q:a",
-      "2",
+  "-codec:a",
+  "libmp3lame",
 
-      output
-    ]);
+  "-b:a",
+  "192k",
+
+  "-ar",
+  "44100",
+
+  "-ac",
+  "2",
+
+  "-y",
+
+  output
+]);
 
     const data =
       await ffmpeg.readFile(output);
