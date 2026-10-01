@@ -992,8 +992,8 @@ app.get(
         );
 
       const args = [
-  "--js-runtimes",
-  "deno",
+        "--js-runtimes",
+"node",
   "--ffmpeg-location",
   path.dirname(FFMPEG_PATH),
   "-f",
