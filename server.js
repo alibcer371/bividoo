@@ -992,8 +992,10 @@ app.get(
         );
 
       const args = [
-        "--js-runtimes",
-"node",
+  "--js-runtimes",
+  "node",
+  "--cookies",
+  "/etc/secrets/youtube-cookies.txt",
   "--ffmpeg-location",
   path.dirname(FFMPEG_PATH),
   "-f",
