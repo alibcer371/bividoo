@@ -12,8 +12,11 @@ const net = require("net");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const FFMPEG_PATH = require("ffmpeg-static") || "ffmpeg";
-const YTDLP_PATH = path.join(__dirname, "yt-dlp.exe");
-/* =========================================================
+const YTDLP_PATH =
+  process.platform === "win32"
+    ? path.join(__dirname, "yt-dlp.exe")
+    : path.join(__dirname, "bin", "yt-dlp");
+    /* =========================================================
    TEMEL AYARLAR
 ========================================================= */
 
