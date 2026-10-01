@@ -990,13 +990,16 @@ app.get(
           crypto.randomUUID() +
             ".mp4"
         );
+const cookiesSource = "/etc/secrets/youtube-cookies.txt";
+const cookiesPath = path.join(TEMP_DIR, "youtube-cookies.txt");
 
+fs.copyFileSync(cookiesSource, cookiesPath);
       const args = [
   "--js-runtimes",
   "node",
   "--cookies",
-  "/etc/secrets/youtube-cookies.txt",
-  "--ffmpeg-location",
+cookiesPath,  
+"--ffmpeg-location",
   path.dirname(FFMPEG_PATH),
   "-f",
   "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
